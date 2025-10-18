@@ -1,0 +1,25 @@
+{
+	"name": "converse-hono-backend",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite build && wrangler pages dev",
+		"deploy": "npm run build && wrangler pages deploy",
+		"cf-typegen": "wrangler types --env-interface CloudflareBindings"
+	},
+	"dependencies": {
+		"@hono/node-server": "^1.19.5",
+		"dexie": "^4.2.1",
+		"hono": "^4.9.12",
+		"uuid": "^13.0.0"
+	},
+	"devDependencies": {
+		"@hono/vite-build": "^1.2.0",
+		"@hono/vite-dev-server": "^0.18.2",
+		"@types/node": "^24.8.1",
+		"@types/uuid": "^11.0.0",
+		"vite": "^6.3.5",
+		"wrangler": "^4.43.0"
+	}
+}
