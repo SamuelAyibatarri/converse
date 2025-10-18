@@ -1,0 +1,15 @@
+{
+  "agents": [],
+  "customers": [
+    {
+      "id": "e527bbce-99d4-4a9b-843b-64125e0f1c58",
+      "name": "Samuel Ayibatarri",
+      "email": "email@email.com",
+      "passwordHash": "somerandomhash",
+      "accountCreationDate": 1760804351955,
+      "lastLogin": 1760804351955,
+      "chatHistory": []
+    }
+  ],
+  "chatData": []
+}
