@@ -1,5 +1,5 @@
-import { InfoIcon } from "lucide-react"
-import { useState } from 'react'
+import { CheckCircle, InfoIcon, X } from "lucide-react"
+import { useEffect, useState } from 'react'
 
 import {
   InputGroup,
@@ -13,45 +13,78 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-export function PasswordInput() {
-    const uppercaseLetters: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const lowercaseLetter: string = uppercaseLetters.toLowerCase();
-    const specialCharacters: string = "!, @, #, $, %, ^, &, *, +, _"
-    const [password, setPassword] = useState<string>("");
-    const [isPasswordValid, setValidPassword] = useState<boolean>(false);
+interface ValidityMatrix {
+  hasUppercase: boolean;
+  hasLowercase: boolean; 
+  hasNumber: boolean;
+  hasSpecial: boolean;
+  minLength: boolean;
+};
 
-    function validatePassword() {
-        // Check if password is less than 8 characters
-        if (password.length < 8) {
-            console.error("Your password is less than 8 characters")
-            return;
-        } else {
-            // Check if password has at least one uppercase letter
-            const arrUL = uppercaseLetters.split("");
-            for (let entry in arrUL) {
-                if (password.includes(entry)) {
-                    const arrSP = specialCharacters.split(",");
-                    for (let entry in arrSP) {
-                        if (password.includes(entry)) {
-                            setValidPassword(true);
-                            console.log("Password is valid")
-                            return;
-                        } else {
-                            console.error("Your password must contain at least one special character")
-                            return;
-                        }
-                    }
-                } else {
-                    console.error("Your password must have atleast one uppercase letter")
-                    return;
-                }
-            }
-        }
+interface ComponentProps {
+  passwordInput: string;
+  passwordValid: (isValid: boolean) => void;
+  setPassword: (pass: string) => void;
+}
+
+export function PasswordInput({passwordInput, passwordValid, setPassword}: ComponentProps) {
+    const [isPasswordValid, setValidPasswordBool] = useState<boolean>(false);
+    const [validPassword, setValidPassword] = useState<string>("");
+    const [validityMatrix, setValidityMatrix] = useState<ValidityMatrix>(
+      {
+        hasUppercase: false,
+        hasLowercase: false,
+        hasNumber: false,
+        hasSpecial: false,
+        minLength: false
+      }
+    )
+    const validMatrix: ValidityMatrix = { 
+        hasUppercase: true, 
+        hasLowercase: true, 
+        hasNumber: true, 
+        hasSpecial: true, 
+        minLength:true
+       };
+
+    function validatePassword(): void {
+      const hUC = /[A-Z]/.test(passwordInput);
+      const hLC = /[a-z]/.test(passwordInput);
+      const hN = /\d/.test(passwordInput);
+      const hS = /[!@#$%^&*(),.?":{}|<>]/.test(passwordInput);
+      const mL = passwordInput.length >= 8;
+
+      setValidityMatrix( {
+        hasUppercase: hUC, 
+        hasLowercase: hLC, 
+        hasNumber: hN,
+        hasSpecial: hS,
+        minLength: mL 
+      })
     }
+
+    useEffect(() => {
+      validatePassword();
+    }, [passwordInput])
+
+
+    useEffect(() => {
+      console.log(validityMatrix);
+      console.log(JSON.stringify(validityMatrix) === JSON.stringify(validMatrix));
+      console.log(validMatrix);
+      if (JSON.stringify(validityMatrix) === JSON.stringify(validMatrix)) {
+        setValidPasswordBool(true);
+        passwordValid(true);
+      }  else {
+        setValidPasswordBool(false);
+        passwordValid(false)
+      }
+    }, [validityMatrix, validMatrix])
+
   return (
     <div className="grid w-full max-w-sm gap-4">
       <InputGroup>
-        <InputGroupInput placeholder="Enter password" type="password" />
+        <InputGroupInput placeholder="Enter password" type="password" value={passwordInput} onChange={ event => setPassword(event.target.value)} />
         <InputGroupAddon align="inline-end">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -60,11 +93,17 @@ export function PasswordInput() {
                 aria-label="Info"
                 size="icon-xs"
               >
-                <InfoIcon />
+                {isPasswordValid ?<CheckCircle className="text-green-600" /> : <InfoIcon className="text-red-600"/>}
               </InputGroupButton>
             </TooltipTrigger>
-            <TooltipContent>
-              <p>Password must be at least 8 characters</p>
+            <TooltipContent className="gap-5">
+              { isPasswordValid ? <p>Password is valid</p> : <>
+                <p>Password must have at least 8 characters {}</p>
+                <p>Password must have at least one uppercase character</p>
+                <p>Password must have at least one number</p>
+                <p>Password must have special characters: {'!@#$%^&*(),.?":{}|<>'}</p>
+                <p>Password must contain lowercase letters</p>
+              </>}
             </TooltipContent>
           </Tooltip>
         </InputGroupAddon>
