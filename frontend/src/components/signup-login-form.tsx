@@ -1,8 +1,11 @@
 import { GalleryVerticalEnd } from "lucide-react"
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { PasswordInput } from "./password-input-component"
+import * as Interfaces from '@/Interfaces'
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
   Field,
   FieldDescription,
@@ -11,12 +14,67 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { signup, login } from "@/auth"
+import { toast } from "sonner"
+import { Toaster } from "@/components/ui/sonner"
+import { useNavigate } from "react-router-dom";
+
+type UserRoleType = "agent" | "customer";
 
 export function SignUp_Login_Form({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const [pageState, setPageState] = useState<"login" | "signup">("login");
+  const [emailInput, setEmailInput] = useState<string>("");
+  const [passwordInput, setPasswordInput] = useState<string>("");
+  const [isPasswordValid, setValidPasswordBool] = useState<boolean>(false);
+  const [nameInput, setNameInput] = useState<string>("");
+  const [usertype, setUserType] = useState<UserRoleType>("agent");
+
+  const navigate = useNavigate();
+
+  const loginUserForm: Interfaces.LAI = {
+    email: emailInput,
+    passwordHash: passwordInput,
+    usertype: usertype
+  }
+ 
+  const signupUserForm: Interfaces.CAI = {
+    name: nameInput,
+    email: emailInput,
+    passwordHash: passwordInput,
+    usertype: usertype
+  }
+
+  function handleLoginClick() {
+    console.log("Trying to log in");
+    login(loginUserForm);
+  }
+
+  const handleSignupClick = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = signupUserForm;
+
+    try {
+      const user = await signup(formData as Interfaces.CAI);
+      toast.success(`Welcome, ${user.name}`)
+      window.location.reload();
+
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+        // alert(error.message)
+      } else {
+        toast.error("An unknown error occurred.");
+      }
+    }
+  };
+  
+  useEffect(() => {
+    if (isPasswordValid === true)  console.log("Password is now valid!");
+    return;
+  }, [isPasswordValid])
 
   function setLoginPage(): void {
     setPageState("login");
@@ -25,6 +83,16 @@ export function SignUp_Login_Form({
   function setSignupPage(): void {
     setPageState("signup");
   };
+
+  // function handleSignup() {
+  //   const signUpData: Interfaces.CAI = {
+  //     name: string;
+  //     email: string;
+  //     passwordHash: string;
+  //     usertype: "agent" | "customer";
+  //   }
+  //   login()
+  // }
 
   const loginForm =  <div className={cn("flex flex-col gap-6", className)} {...props}>
       <form>
@@ -50,11 +118,15 @@ export function SignUp_Login_Form({
               id="email"
               type="email"
               placeholder="m@example.com"
+              value={emailInput}
+              onChange={(event) => { setEmailInput(event.target.value) }}
               required
             />
+            <FieldLabel htmlFor="password">Password</FieldLabel>
+            <PasswordInput passwordInput={passwordInput} passwordValid={setValidPasswordBool} setPassword={setPasswordInput}/>
           </Field>
           <Field>
-            <Button type="submit">Login</Button>
+            <Button onClick={handleLoginClick} disabled={!isPasswordValid || (nameInput.length === 0)}>Login</Button>
           </Field>
           <FieldSeparator>Or</FieldSeparator>
           <Field className="grid gap-4 sm:grid-cols-2">
@@ -109,13 +181,37 @@ export function SignUp_Login_Form({
               id="email"
               type="email"
               placeholder="m@example.com"
+              value={emailInput}
+              onChange={(event) => { setEmailInput(event.target.value) }}
               required
             />
-            <FieldLabel htmlFor="password">Enter a password</FieldLabel>
-            <PasswordInput />
+            <FieldLabel htmlFor="password">Password</FieldLabel>
+            <PasswordInput passwordInput={passwordInput} passwordValid={setValidPasswordBool} setPassword={setPasswordInput}/>
+            <FieldLabel htmlFor="text">Full Name</FieldLabel>
+            <Input 
+              id="full-name"
+              type="text"
+              placeholder="Surname first eg. Doe John"
+              value={nameInput}
+              onChange={(event) => { setNameInput(event.target.value) }}
+              required = {true}
+              />
           </Field>
           <Field>
-            <Button type="submit">Create Account</Button>
+            <FieldLabel htmlFor="role">Role</FieldLabel>
+             <RadioGroup defaultValue={usertype} onValueChange={(newValue) => { setUserType(newValue as UserRoleType)}} className="flex flex-row w-full justify-between">
+                <div className="flex items-center space-x-2 border rounded-lg h-10 w-auto p-3">
+                  <RadioGroupItem value="agent" id="agent" />
+                  <Label htmlFor="agent" className="">Agent</Label>
+                </div>
+                <div className="flex items-center space-x-2 justify-around border p-3 rounded-lg">
+                  <RadioGroupItem value="customer" id="customer" />
+                  <Label htmlFor="agent">Customer</Label>
+                </div>
+              </RadioGroup>
+          </Field>
+          <Field>
+            <Button onClick={handleSignupClick} disabled={!isPasswordValid || (nameInput.length === 0)}>Create Account</Button>
           </Field>
           <FieldSeparator>Or</FieldSeparator>
           <Field className="grid gap-4 sm:grid-cols-2">
@@ -146,6 +242,10 @@ export function SignUp_Login_Form({
       </FieldDescription>
     </div>
   return (
-    pageState === "login" ? loginForm : signUpForm
+    <>    
+      {pageState === "login" ? loginForm : signUpForm}
+      <Toaster />
+    </>
+
   )
 }
