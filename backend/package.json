@@ -2,7 +2,7 @@
 	"name": "converse-hono-backend",
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
+		"dev": "concurrently \"vite\" \"node src/server.cjs\"",
 		"build": "vite build",
 		"preview": "vite build && wrangler pages dev",
 		"deploy": "npm run build && wrangler pages deploy",
@@ -10,15 +10,20 @@
 	},
 	"dependencies": {
 		"@hono/node-server": "^1.19.5",
+		"cors": "^2.8.5",
 		"dexie": "^4.2.1",
 		"hono": "^4.9.12",
-		"uuid": "^13.0.0"
+		"typescript": "^5.9.3",
+		"uuid": "^13.0.0",
+		"ws": "^8.18.3"
 	},
 	"devDependencies": {
 		"@hono/vite-build": "^1.2.0",
 		"@hono/vite-dev-server": "^0.18.2",
 		"@types/node": "^24.8.1",
 		"@types/uuid": "^11.0.0",
+		"@types/ws": "^8.18.1",
+		"concurrently": "^9.2.1",
 		"vite": "^6.3.5",
 		"wrangler": "^4.43.0"
 	}
