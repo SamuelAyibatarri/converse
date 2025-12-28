@@ -13,6 +13,6 @@ export default defineConfig({
   },
     server: {
       allowedHosts: true,
-      host: true, // This exposes the server to the network
+      host: true, 
   },
 })
