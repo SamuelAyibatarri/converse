@@ -1,18 +1,8 @@
 import * as React from "react"
 import UserInfo from "./UserInfo"
-
-import { Calendars } from "@/components/calendars"
-import { DatePicker } from "@/components/date-picker"
-import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import ActionTray from "./action-tray"
 import PaymentHistory from "./payment-history"

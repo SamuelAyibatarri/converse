@@ -16,72 +16,6 @@ interface QueueItemData {
   threadId: string;
 }
 
-// const mockQueueData: QueueItemData[] = [
-//   {
-//     id: 'q-1',
-//     name: 'Jane Doe',
-//     profilePicUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBbWuFpe2LETiEuICL1-NbOlxcaN1n4VnkDPbdalR6WsOlUc7sjbnLsFWs8lBJardxmmyCgv8NS7UHyMz6iQGSNo4YiT_SGCd4t3NI9j46MV6JN7thedQBXbLV64-1y9z7A9ZlQsOWoNW9ZphKRPniQUX90xwYccps7ZRvuNM0cTjGHpNaePygHD18hA9veUwqlgY_-bAvTaz7EcdUH2TeA9qgVdCIJD7vcVERAZTv5zNuBT9YXSC_MEXXaJbI7OHRhXuf2tYWa3pI0',
-//     waitTime: '05:12',
-//     waitLevel: 'high',
-//     messagePreview: "Hi, I'm having trouble with my recent order...",
-//     threadId: "string",
-//   },
-//   {
-//     id: 'q-2',
-//     name: 'John Smith',
-//     profilePicUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB-rADO3yDjsx5oIm6mcI3XUKE6jfx6IY_-Xev8aBClo9D5rzV0OaZtw03D3ZQoFaQB9XM3pQ8ovc-LIola7X9v5hv6BKhHbPf-nkMmYSMLOZK1pFir4ivJqe7Rd-ilIxPc7HStzG47I1WLqSV7__nuuKhdRRLFX80cCsdhv_QZmS-NQy_4cqCw8ZnrNLOI33qIN09wmB8yFEJXhBpn1YyIF_z5prMUWmV-actRC_9CIdsmZWODBLnxpr4WC0TELKN8o9eAyUI-komV',
-//     waitTime: '02:45',
-//     waitLevel: 'medium',
-//     messagePreview: 'I need to reset my password, can you help?',
-//     threadId: "string",
-//   },
-//   {
-//     id: 'q-3',
-//     name: 'Emily White',
-//     profilePicUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC-g0mTYSx0vQAlmHlcHrthEBTRnskeg1dRc3e96LM04-3kdFXIxBFz1hSbJEe7EDVw0H-Lyoif3_vWYjrcUMofYc-lM8cWW26huYQ6mOigsFZL_nOGFsErulUE-fDiB8BcxrZlVAMBNAj-lwv9ruCJ8SugFclZOvFRh0BkyKgIVodNnmZdgC86IuW8tlTvyp9mD2xvy0MnisEfqGRWSyvx8oKdiHaI0N6SwYkDjZCXSfFK2nzjceEnWyOCQ2Y9uhAXz7CPtyd_eVcV',
-//     waitTime: '01:32',
-//     waitLevel: 'low',
-//     messagePreview: 'Question about shipping times.',
-//     threadId: "string",
-//   },
-//   {
-//     id: 'q-4',
-//     name: 'Michael Brown',
-//     profilePicUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAGB0dOZrvtW6_bNnb44CfCE-NypLhVSwEo4doIK7v-HbfAuC--GtFhhjHtfuaiuVr3RDu-RaqAyWXEz69kEExfwHHY2FoS-Jv8ox4delrRZEf9lQURjV85JDOEety1WVZVkqMjjUUPdyRiTIbFBSgqiq0w-rvkVL3LR9mr_BAMNDxajuttQuYViul3sf2Lb0Jm5goORMHCNKLem0eC9IVDsJc0ASQ74IZdfH5XhOjH9a8ytg2Sd8rqKStUeGTrLhHI99lLvAi_Upfn',
-//     waitTime: '00:59',
-//     waitLevel: 'low',
-//     messagePreview: "My discount code isn't working.",
-//     threadId: "string",
-//   },
-//   {
-//     id: 'q-5',
-//     name: 'Sarah Johnson',
-//     profilePicUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA6pQ-XjNj36l2uyD8ATLQu99yTmQQ3R-wCby89IcI4siYM0WA-iyJDHq-5_Bhsyp3sF7QNv1uhRaTAfZqGzq2gEHPAsMTC3i_E44O41IuqVLa4riBWh1PpHNKox1umZhbUQtTX8YkULwEcyXudgMc6hwzyX7c8hIUoWvUieNbs7pRY_yHo5JdaBhLfPBefHwGzzkgZKLVYdc9dZxW_dxRU8r8tT13-V-wznQ1lkjktnZ2z8Hmoo6I8P-rmK_YtKguULcgM-mBVmyRv',
-//     waitTime: '00:21',
-//     waitLevel: 'low',
-//     messagePreview: 'Hello, I have a quick question about product features.',
-//     threadId: "string",
-//   },
-//     {
-//     id: 'q-6',
-//     name: 'Sarah Johnson',
-//     profilePicUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA6pQ-XjNj36l2uyD8ATLQu99yTmQQ3R-wCby89IcI4siYM0WA-iyJDHq-5_Bhsyp3sF7QNv1uhRaTAfZqGzq2gEHPAsMTC3i_E44O41IuqVLa4riBWh1PpHNKox1umZhbUQtTX8YkULwEcyXudgMc6hwzyX7c8hIUoWvUieNbs7pRY_yHo5JdaBhLfPBefHwGzzkgZKLVYdc9dZxW_dxRU8r8tT13-V-wznQ1lkjktnZ2z8Hmoo6I8P-rmK_YtKguULcgM-mBVmyRv',
-//     waitTime: '00:21',
-//     waitLevel: 'low',
-//     messagePreview: 'Hello, I have a quick question about product features.',
-//     threadId: "string",
-//   },
-//     {
-//     id: 'q-7',
-//     name: 'Sarah Johnson',
-//     profilePicUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA6pQ-XjNj36l2uyD8ATLQu99yTmQQ3R-wCby89IcI4siYM0WA-iyJDHq-5_Bhsyp3sF7QNv1uhRaTAfZqGzq2gEHPAsMTC3i_E44O41IuqVLa4riBWh1PpHNKox1umZhbUQtTX8YkULwEcyXudgMc6hwzyX7c8hIUoWvUieNbs7pRY_yHo5JdaBhLfPBefHwGzzkgZKLVYdc9dZxW_dxRU8r8tT13-V-wznQ1lkjktnZ2z8Hmoo6I8P-rmK_YtKguULcgM-mBVmyRv',
-//     waitTime: '00:21',
-//     waitLevel: 'low',
-//     messagePreview: 'Hello, I have a quick question about product features.',
-//     threadId: "string",
-//   }
-// ];
-
 // --- CHILD COMPONENTS ---
 
 interface QueueHeaderProps {
@@ -110,7 +44,7 @@ interface QueueItemProps {
 }
 
 function QueueItem({ item, onAccept, threadId }: QueueItemProps) {
-  // Map wait levels to their corresponding Tailwind classes
+  /// Map wait levels to their corresponding Tailwind classes
   const waitTimeClasses = {
     high: 'text-red-500 dark:text-red-400',
     medium: 'text-amber-500 dark:text-amber-400',

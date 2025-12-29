@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, ArrowDown, SearchIcon } from 'lucide-react';
+import { Calendar, SearchIcon } from 'lucide-react';
 
 // --- TYPE DEFINITIONS ---
 

@@ -7,6 +7,7 @@ export interface User {
   name: string;
   username: string;
   img: string;
+  email?: string;
 }
 
 export interface Agent {
