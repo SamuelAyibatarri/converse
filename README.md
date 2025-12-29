@@ -1,1 +1,13 @@
-Converse is a modern, responsive web application built with React 19, TypeScript, and Vite. It features a robust UI component library using Shadcn UI and Tailwind CSS v4, ensuring a sleek and accessible user interface. The project is set up with a strict linting configuration (ESLint 9 + TypeScript-ESLint) to maintain high code quality and best practices. It includes a comprehensive routing system via React Router DOM and state management using Zustand.
+**Project Name: Converse**
+
+  
+
+**Description:** Converse is an Open Source customer care service software built with React 19, TypeScript, and Shadcn UI. This repository houses the modern, responsive frontend interface, featuring real-time messaging, agent dashboards, and a robust component library powered by Tailwind CSS v4.
+
+  
+
+**Frontend:** [Current Repository]
+
+  
+
+**Backend:** github.com/SamuelAyibatarri/converse-backend
