@@ -4,6 +4,7 @@ import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import './index.css';
 import App from './App.tsx';
 import { AuthPageHandler, ProtectedRoute, DashboardPageHandler } from './components/auth-components.tsx';
+import { ThemeProvider } from './components/theme-provider.tsx';
 
 
 const router = createBrowserRouter([
@@ -27,6 +28,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <RouterProvider router={router} />
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+            <RouterProvider router={router} />
+        </ThemeProvider>
     </StrictMode>,
 );

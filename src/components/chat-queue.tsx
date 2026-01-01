@@ -185,7 +185,6 @@ useEffect(() => {
   }
 
   const handleAcceptChat = (itemId: string, customerId: string, threadId: string) => {
-    console.log('Accepting chat from item:', itemId);
     triggerConnectWs(); /// -> Connect WebSocket in the chat component
     // setQueueItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
     updateCurrentThreadIdAndCustomerId(customerId, threadId);

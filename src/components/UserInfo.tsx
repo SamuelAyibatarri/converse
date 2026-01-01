@@ -7,7 +7,7 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { UseAgentChatState } from "@/lib/zus";
+import { UseAgentChatState, UseAgentDashboardState } from "@/lib/zus";
 import { useEffect, useState } from "react";
 import { HTTP_API_URL } from "@/lib/data";
 import * as data from "./data"
@@ -17,6 +17,11 @@ const UserInfo = () => {
   const [customerDetails, setCustomerDetails] = useState<data.User>();
   const [userDetailsSet, setUserDetailsSet] = useState<boolean>(false);
   const currentCustomerIdZus = UseAgentChatState((state) => state.currentCustomerId);
+
+  const redirect = UseAgentDashboardState((state) => state.updateState);
+  function onQueueButtonClick() {
+      redirect("queue-page");
+  };
 
     const getStoredUser = () => {
     try {
@@ -56,7 +61,6 @@ const UserInfo = () => {
             if (parsedCustomerData.id && parsedCustomerData.name && parsedCustomerData.username) {
               setUserDetailsSet(true)
             }
-            console.log("Customer details works: ", parsedCustomerData)
           } catch (error) {
             console.error("Failed to get customer details:", error)
             setUserDetailsSet(false)
@@ -70,16 +74,13 @@ const UserInfo = () => {
   const emptyUser =
       <Empty className="border border-dashed h-50">
         <EmptyHeader className="w-50 h-25">
-          {/* <EmptyMedia variant="icon">
-            <Cloud />
-          </EmptyMedia> */}
           <EmptyTitle>No Customer Details To View</EmptyTitle>
           <EmptyDescription>
             Connect with a customer
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => { onQueueButtonClick(); }}>
             Queue
           </Button>
         </EmptyContent>
@@ -107,9 +108,7 @@ const UserInfo = () => {
         </div>
       </div>
     </div>
-  return (
-    !userDetailsSet ? emptyUser : userDetailsComponent
-  );
+  return  !userDetailsSet ? emptyUser : userDetailsComponent 
 };
 
 export default UserInfo;

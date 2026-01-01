@@ -143,7 +143,7 @@ const ChatComponent = () => {
       })
       socketRef.current.send(payload);
     } else {
-      console.log("WebSocket not ready");
+      console.error("WebSocket not ready");
     }
   }
 

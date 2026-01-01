@@ -28,6 +28,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Button } from "./ui/button"
 import { useNavigate } from "react-router-dom"
+import { ModeToggle } from "./mode-toggle"
 
 
 interface SidebarLeftProps extends React.ComponentProps<typeof Sidebar> {
@@ -122,6 +123,7 @@ export function SidebarLeft({
         <Button variant={"ghost"} className="justify-start mt-1" onClick={() => {handlePageClick("queue-page")}}><Bot /> Queue</Button>
         <Button variant={"ghost"} className="justify-start" onClick={() => {handlePageClick("chat-page")}}><Inbox /> Active Chats</Button>
         <Button variant={"ghost"} className="justify-start" onClick={() => {handlePageClick("chat-history-page")}}><History /> History</Button>
+        {/* <ModeToggle /> */}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
