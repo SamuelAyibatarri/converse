@@ -1,205 +1,319 @@
-import { useState } from 'react';
-import { Calendar, SearchIcon } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { 
+  Calendar, 
+  Search, 
+  MessageSquareOff,
+  AlertCircle,
+  Hash
+} from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton"; 
+import { 
+  Avatar, 
+  AvatarFallback 
+} from "@/components/ui/avatar";
 
-// --- TYPE DEFINITIONS ---
+// --- INTERFACES (Based on your provided types) ---
 
+interface Message {
+  readonly id: string;
+  readonly thread_id: string;
+  readonly sender_id: string;
+  readonly content: string;
+  readonly timestamp: number;
+}
+
+// The UI Data Structure
 interface ConversationData {
   id: string;
   name: string;
   profilePicUrl: string;
   messagePreview: string;
-  date: string;
+  timestamp: number;
+  displayDate: string;
+  fillerColor: string;
 }
 
-const mockConversations: ConversationData[] = [
-  {
-    id: 'c-1',
-    name: 'Eleanor Pena',
-    profilePicUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBV4aJy3Mt5esX4bbG_yLjW9SLVMLW2CgtZiQU_essZ_pdCgLyx-VQLEJiCSe3EPkapTEqim6RcUVvA2BwXxmF6L0UASuV-EOlPfiwai3BXSudDs42XDawbbotdt-5bbV6-FiRDtMKGKT1dnpXRK_vBG8N5CULiKQBnEwtTtCFeASHltCUG0QqYOgr_ji9jPQetK8Oo3SuLf8xCW2gEHTnFs9VsEcE0gcsRkSz4gs5qDaO6O08BC_laLqaS26y7797vf-GSifD1ASWW',
-    messagePreview: 'Thank you so much! That solved the issue.',
-    date: 'Oct 28',
-  },
-  {
-    id: 'c-2',
-    name: 'Cody Fisher',
-    profilePicUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDMTmSQ9dSrxjrWJh1RIi7JlQoc1nNjFHagzUNwCaoeo3Mrgr3LGdLxyy0QKKlKHRhNM6qAhAtbjNPVK7qcaVwCrDcN8_9hkAREDGm7KX_BoXZBFKDN4g_uXkPQlaXP0KY4ygoJ0vcFlFaGLq_20OX-oU6NhtbYy1BMU0i3NlNjWNB1M1mrEkdtNQvXhsECQ2ZnlSwO4SLITrsq3vVrHidiY44ddKIsDz9uzxjKbmgtgW-gTOSKrnidziQCHxqft_ky8O5KYasZu5rV',
-    messagePreview: 'I have a question about my recent order...',
-    date: 'Oct 27',
-  },
-  {
-    id: 'c-3',
-    name: 'Kristin Watson',
-    profilePicUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAf9j1qCDdtuTwE9WM3zCoawKfZi9G6WnfZzXuTNtBssBA0SbVjKb4IBn41Ug0LMFKkY9D7uDw9VubI2oWz_3oTsBREgGmglnniFcAnMx2KxD3h1u-a1_-eCl4Nx4we1YD2Xtsjgqa7-quxQvBNUYMhubfKBddiPiTdLHO5NyCOoEgKYFhY-cmzMFmdCvq3sEtI5OjD1SrCyXWWU2zaPr7PLdlCUtIzw8UMLyzGLO5GtRb01ZxUX1kvSyh6aef6NfxBd3FjSosTloqC',
-    messagePreview: 'Can you please provide an update on ticket #5829?',
-    date: 'Oct 27',
-  },
-  {
-    id: 'c-4',
-    name: 'Jacob Jones',
-    profilePicUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDJ2QxBLtsdzaM_-OyJto21UZfs-bbUf47U_OYmFO76kCJdQTQtd6eIRNnmDzxn9nQ4QHEFCAuP-Juvyhh_0lfA3OZjJ88KjllDGvQorfAonrG79-a5CbxLMoE_hdgJb6ZUQjls7NSqgbme5gO8oWqzrHyhaMvBA5wauwS5mnPiEww4b5QfB9mYtVfdURLFRlZrQp3GJ3rYamqjaTX8GUbY4FvN7IE7l1jDMjCeCpX54Wd5lNgnxAIIvB-25WqUexNCufhMbAYlPTAn',
-    messagePreview: 'My subscription is about to expire, I need help.',
-    date: 'Oct 26',
-  },
-  {
-    id: 'c-5',
-    name: 'Jenny Wilson',
-    profilePicUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuClk-_flCsX1dNoejPDqq35DlClcXGcmSakaU9QF-cnsL7SZYdFrEgkq4zdFDi8y7JOaP9IPk_cDDn-b4KaYn-qXJ_UH1Wd4vYFdMelMRtD-LN4eVH2Fj91_4rglVgO8SQc6ceTvnnDT11UtlgwQdlMfhn0-EqLaN1SPU0rhYNqq9PodbYK6D996ZRL_OJPIm79g_0PZEDxwlE-5jnYWsmfXtdQIZzrS81_KM44dNMyGnPnJMi5zKepLDof2Omw70i7BdJgAbthtYgI',
-    messagePreview: "That's great, thank you for your help!",
-    date: 'Oct 25',
-  },
-];
-
-// --- CHILD COMPONENTS ---
-
-/**
- * Renders the search bar and filter buttons
- */
-interface HistoryControlsProps {
-  searchValue: string;
-  onSearchChange: (value: string) => void;
+// Raw response from /api/history
+interface HistoryRow {
+  user_id: string;
+  thread_id: string;
 }
+
+// Raw response from /api/chatData
+interface ChatDataResponse {
+  threadId: string;
+  messages: Message[];
+  error?: string;
+}
+
+// --- HELPERS ---
+
+const getFillerColor = (id: string) => {
+  const colors = [
+    "bg-red-500", "bg-orange-500", "bg-amber-500", 
+    "bg-green-500", "bg-emerald-500", "bg-teal-500", 
+    "bg-cyan-500", "bg-blue-500", "bg-indigo-500", 
+    "bg-violet-500", "bg-purple-500", "bg-pink-500"
+  ];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+};
+
+const formatTimestamp = (timestamp: number) => {
+  if (!timestamp) return "";
+  const date = new Date(timestamp);
+  const now = new Date();
+  
+  // Check if it's today
+  const isToday = date.getDate() === now.getDate() && 
+                  date.getMonth() === now.getMonth() && 
+                  date.getFullYear() === now.getFullYear();
+
+  if (isToday) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+};
+
+// --- COMPONENTS ---
 
 function HistoryControls({
   searchValue,
   onSearchChange,
-}: HistoryControlsProps) {
+}: {
+  searchValue: string;
+  onSearchChange: (value: string) => void;
+}) {
   return (
-    <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-      {/* SearchBar */}
-      <div className="flex-1">
-        <label className="flex flex-col min-w-40 h-10 w-full">
-          <div className="flex w-full flex-1 items-stretch rounded-lg h-full">
-            <div className="flex items-center justify-center rounded-l-lg border border-r-0 border-slate-300 dark:border-slate-700 bg-white dark:bg-background-dark pl-4 text-slate-500 dark:text-slate-400">
-              <SearchIcon className='h-4 w-4'/>
-            </div>
-            <input
-              className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary h-full border border-l-0 border-slate-300 dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary dark:focus:border-primary placeholder:text-slate-500 dark:placeholder:text-slate-400 px-4 text-base font-normal leading-normal"
-              placeholder="Search by keyword, customer name..."
-              value={searchValue}
-              onChange={(e) => onSearchChange(e.target.value)}
-            />
-          </div>
-        </label>
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className="relative flex-1">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search Ticket ID..."
+          value={searchValue}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="pl-9"
+        />
       </div>
-      {/* Chips */}
-      <div className="flex gap-3">
-        <button className="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-white dark:bg-[#151d27] border border-slate-300 dark:border-slate-700 px-4 hover:bg-slate-100 dark:hover:bg-background-dark">
-            <div className="flex items-center justify-center rounded-l-lg border-r-0 border-slate-300 dark:border-slate-700 bg-white dark:bg-background-dark text-slate-500 dark:text-slate-400">
-              <Calendar className='h-4 w-4'/>
-            </div>
-          <p className="text-slate-800 dark:text-slate-200 text-sm font-medium leading-normal">
-            Date
-          </p>
-        </button>
-      </div>
+      <Button variant="outline" className="gap-2 shrink-0">
+        <Calendar className="h-4 w-4" />
+        Date
+      </Button>
     </div>
   );
 }
 
-/**
- * Renders a single conversation item in the list
- */
-interface ConversationItemProps {
-  item: ConversationData;
-  onClick: (id: string) => void;
-}
-
-function ConversationItem({ item, onClick }: ConversationItemProps) {
+function ConversationItem({ item, onClick }: { item: ConversationData; onClick: (id: string) => void }) {
   return (
     <div
-      className="flex cursor-pointer items-center gap-4 px-4 min-h-[72px] py-2 justify-between hover:bg-slate-50 dark:hover:bg-slate-800/20"
+      className="flex cursor-pointer items-center justify-between gap-4 p-4 transition-colors hover:bg-muted/50"
       onClick={() => onClick(item.id)}
     >
       <div className="flex items-center gap-4 overflow-hidden">
-        {' '}
-        {/* Added overflow-hidden */}
-        <div
-          className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-10 w-10 shrink-0" // Added shrink-0
-          aria-label={`Avatar for ${item.name}`}
-          style={{ backgroundImage: `url("${item.profilePicUrl}")` }}
-        ></div>
-        <div className="flex flex-col justify-center overflow-hidden">
-          {' '}
-          {/* Added overflow-hidden */}
-          <p className="text-slate-900 dark:text-white text-sm font-medium leading-normal line-clamp-1">
+        <Avatar className="h-10 w-10 border border-border">
+          <AvatarFallback className={`${item.fillerColor} text-white`}>
+            <Hash className="h-4 w-4" />
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col justify-center overflow-hidden gap-0.5">
+          <p className="text-sm font-medium leading-none truncate font-mono">
             {item.name}
           </p>
-          <p className="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal line-clamp-1">
+          <p className="text-sm text-muted-foreground truncate">
             {item.messagePreview}
           </p>
         </div>
       </div>
       <div className="shrink-0">
-        <p className="text-slate-500 dark:text-slate-400 text-xs font-normal leading-normal">
-          {item.date}
+        <p className="text-xs text-muted-foreground">
+          {item.displayDate}
         </p>
       </div>
     </div>
   );
 }
 
-/**
- * Renders a placeholder when no conversations are found
- */
-function EmptyState() {
+function LoadingState() {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 p-16 text-center">
-      <span className="material-symbols-outlined text-6xl text-slate-400 dark:text-slate-600">
-        chat_bubble_outline
-      </span>
-      <h3 className="text-slate-800 dark:text-slate-200 text-lg font-semibold">
-        No conversations found
-      </h3>
-      <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs">
-        Try adjusting your search or filter criteria to find the conversation
-        you're looking for.
-      </p>
+    <div className="flex flex-col divide-y">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="flex items-center gap-4 p-4">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[200px]" />
+            <Skeleton className="h-3 w-[150px]" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
-// --- PARENT COMPONENT ---
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted">
+        <MessageSquareOff className="h-10 w-10 text-muted-foreground" />
+      </div>
+      <h3 className="mt-2 text-lg font-semibold text-foreground">
+        No conversations found
+      </h3>
+    </div>
+  );
+}
 
-/**
- * The main component that renders the entire Chat History section
- */
+// --- MAIN COMPONENT ---
+
 export default function ChatHistorySection() {
-  const [conversations, setConversations] =
-    useState<ConversationData[]>(mockConversations);
+  const [conversations, setConversations] = useState<ConversationData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Get Auth Data safely
+  let userId = '';
+  let token = '';
+  try {
+    const rawData = localStorage.getItem('user_data');
+    if (rawData) {
+      const userData = JSON.parse(rawData);
+      userId = userData?.userData?.id || '';
+      token = userData?.token || '';
+    }
+  } catch (e) {
+    console.error("Error parsing local storage", e);
+  }
+
+  useEffect(() => {
+    async function fetchHistoryAndDetails() {
+      if (!userId || !token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        
+        // 1. Fetch the list of Thread IDs
+        const historyRes = await fetch(`http://localhost:8787/api/history/${userId}/${token}`);
+        if (!historyRes.ok) throw new Error('Failed to fetch history list');
+        
+        const historyJson = await historyRes.json();
+        
+        if (historyJson.success && Array.isArray(historyJson.data)) {
+          const threads: HistoryRow[] = historyJson.data;
+
+          // 2. Fetch details for EVERY thread in parallel (Client-side Join)
+          const detailPromises = threads.map(async (row) => {
+            try {
+              const chatRes = await fetch(`http://localhost:8787/api/chatData/${row.thread_id}/${token}`);
+              
+              if (!chatRes.ok) return null; // Skip failed fetches
+              
+              const chatJson: ChatDataResponse = await chatRes.json();
+              
+              // Find the latest message for preview (Last item in array usually)
+              const msgs = chatJson.messages || [];
+              const lastMsg = msgs.length > 0 ? msgs[msgs.length - 1] : null;
+
+              return {
+                threadId: row.thread_id,
+                lastMessage: lastMsg
+              };
+            } catch (err) {
+              console.warn(`Failed to fetch details for thread ${row.thread_id}`, err);
+              return null;
+            }
+          });
+
+          // Wait for all requests to finish
+          const detailsResults = await Promise.all(detailPromises);
+
+          // 3. Map to UI
+          const mappedData: ConversationData[] = threads.map((row) => {
+            // Find the details we just fetched
+            const details = detailsResults.find(d => d?.threadId === row.thread_id);
+            const msg = details?.lastMessage;
+
+            return {
+              id: row.thread_id,
+              // Filler Name (Ticket #ID)
+              name: `Ticket #${row.thread_id.slice(0, 8)}`,
+              profilePicUrl: '', 
+              // Actual Message Data or Filler
+              messagePreview: msg ? msg.content : 'No messages yet',
+              timestamp: msg ? msg.timestamp : Date.now(),
+              displayDate: formatTimestamp(msg ? msg.timestamp : Date.now()),
+              fillerColor: getFillerColor(row.thread_id)
+            };
+          });
+
+          // Sort by newest message first
+          mappedData.sort((a, b) => b.timestamp - a.timestamp);
+          
+          setConversations(mappedData);
+        } else {
+          setConversations([]);
+        }
+      } catch (err) {
+        console.error("Failed to load history", err);
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchHistoryAndDetails();
+  }, [userId, token]);
 
   const handleConversationClick = (id: string) => {
     console.log('Opening conversation:', id);
-    // Add logic here to navigate to the chat
   };
 
-  // Filter logic
   const filteredConversations = conversations.filter(
     (convo) =>
       convo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       convo.messagePreview.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  if (error) {
+    return (
+      <div className="flex w-full items-center justify-center p-8 text-red-500 gap-2 border border-red-200 rounded-lg bg-red-50">
+        <AlertCircle className="h-5 w-5" />
+        <span>Error loading chats: {error}</span>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex w-full max-w-5xl flex-col gap-6">
-      {/* Search and Filters */}
+    <div className="flex w-full max-w-5xl flex-col gap-6 p-4">
       <HistoryControls
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
       />
 
-      {/* Conversation List */}
-      <div className="flex flex-col divide-y divide-slate-200 dark:divide-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151d27]">
-        {filteredConversations.length > 0 ? (
-          filteredConversations.map((item) => (
-            <ConversationItem
-              key={item.id}
-              item={item}
-              onClick={handleConversationClick}
-            />
-          ))
+      <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
+        {loading ? (
+          <LoadingState />
         ) : (
-          <EmptyState />
+          <div className="flex flex-col divide-y">
+            {filteredConversations.length > 0 ? (
+              filteredConversations.map((item) => (
+                <ConversationItem
+                  key={item.id}
+                  item={item}
+                  onClick={handleConversationClick}
+                />
+              ))
+            ) : (
+              <EmptyState />
+            )}
+          </div>
         )}
       </div>
     </div>

@@ -64,7 +64,7 @@ const chatData = [
 export function ItemGroupExample() {
   return (
     // <ScrollArea className="grow">
-     <div className="flex w-full h-[85vh] flex-col gap-1 border rounded-[12px]">
+     <div className="flex w-full h-[85vh] flex-col gap-1 border border-purple-800 rounded-[12px]">
         <ScrollArea className="grow min-h-0">
       <ItemGroup>
         {chatData.map((chat, index) => (

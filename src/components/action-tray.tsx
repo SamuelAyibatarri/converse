@@ -78,7 +78,7 @@ const ActionTray = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Action Required</AlertDialogTitle>
+            <AlertDialogTitle>Notice</AlertDialogTitle>
             <AlertDialogDescription>
               {getDialogContent()}
             </AlertDialogDescription>
