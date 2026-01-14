@@ -2,7 +2,9 @@ import { create } from 'zustand';
 
 type TriggerStore = {
   connectWsSignal: number;
+  resolveChatSignal: number;
   triggerConnectWs: () => void;
+  triggerResolveChat: () => void;
 }
 
 type AgentDashboardPages = "chat-page" | "chat-history-page" | "queue-page";
@@ -54,7 +56,10 @@ export const UseAgentDashboardState = create<AgentDashboardState>((set) => ({
 
 export const useTriggerStore = create<TriggerStore>((set) => ({
   connectWsSignal: 0,
+  resolveChatSignal: 0,
   triggerConnectWs: () => set((state) => ({ connectWsSignal: state.connectWsSignal + 1 })),
+  triggerResolveChat: () => set((state) => ({ resolveChatSignal: state.resolveChatSignal + 1}))
+  
 }));
 
 export const UseUserDataState = create<UserDataState>((set) => ({

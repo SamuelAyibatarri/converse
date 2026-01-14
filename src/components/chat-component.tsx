@@ -36,6 +36,7 @@ const ChatComponent = () => {
   const currentCustomerIdZus = UseAgentChatState((state) => state.currentCustomerId);
   const currentThreadIdZus = UseAgentChatState((state) => state.currentThreadId);
   const redirectToChat = UseAgentDashboardState((state) => state.updateState);
+  const resolveChatSignal = useTriggerStore((state) => state.resolveChatSignal);
 
   useEffect(() => {
     if(currentThreadIdZus) {
@@ -61,6 +62,13 @@ const ChatComponent = () => {
       scrollBottomRef.current.scrollIntoView({ behavior: "smooth" })
     }
   }, [messagesState])
+
+  useEffect(() => {
+    if (resolveChatSignal > 0) {
+      handleResolveChat();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolveChatSignal]);
   
   function connectWebSocket() {
         if (socketRef.current) socketRef.current.close();
@@ -141,6 +149,19 @@ const ChatComponent = () => {
         senderId: userData.userData.id,     
         receiverId: currentCustomerIdZus 
       })
+      socketRef.current.send(payload);
+    } else {
+      console.error("WebSocket not ready");
+    }
+  }
+
+  async function handleResolveChat() {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN && userData?.userData && currentCustomerIdZus) {
+      const payload = JSON.stringify({
+        type: "RESOLVE_CHAT",
+        threadId: currentThreadIdZus,     
+      })
+      alert("Sending Payload: " + payload);
       socketRef.current.send(payload);
     } else {
       console.error("WebSocket not ready");

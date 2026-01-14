@@ -7,6 +7,7 @@ import { ChatList, ChatBubble, ChatBubbleAvatar, ChatBubbleMessage, ChatBubbleAv
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -54,6 +55,9 @@ export default function ChatComponent({ onBackButtonClick }: ComponentProps) {
   const [freeAgentsList, setFreeAgentsList] = useState<string[]>([])
   const [authToken, setAuthToken] = useState<string>("")
   const [wsConnection, setWSConnection] = useState<boolean>(false)
+  // FIX: Removed redundant resolveChatSignalReceived state
+  const resolveChatPayloadRef = useRef<{type: "RESOLVE_CHAT", threadId: string}>({type: "RESOLVE_CHAT", threadId: ""});
+  const [alertTrigger, setAlertTrigger] = useState<boolean>(false);
 
   ///:::::::::::::::: Refs ::::::::::::::::::
   const currentThreadIdRef = useRef<string>("")
@@ -65,12 +69,12 @@ export default function ChatComponent({ onBackButtonClick }: ComponentProps) {
   const unmountedRef = useRef<boolean>(false)
   const scrollBottomRef = useRef<HTMLDivElement>(null)
 
-// Add this useEffect to trigger scroll whenever messages change
-useEffect(() => {
-  if (scrollBottomRef.current) {
-    scrollBottomRef.current.scrollIntoView({ behavior: "smooth" })
-  }
-}, [messages])
+  // Add this useEffect to trigger scroll whenever messages change
+  useEffect(() => {
+    if (scrollBottomRef.current) {
+      scrollBottomRef.current.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [messages])
 
   // Keep refs in sync with state
   useEffect(() => { messagesRef.current = messages }, [messages])
@@ -109,6 +113,8 @@ useEffect(() => {
     if (!userDataSet) return
   }, [userDataSet])
 
+  // FIX: Removed the useEffect that watched resolveChatSignalReceived. 
+  // We now set alertTrigger directly in the websocket handler.
 
   // ---------- Helpers ----------
   const getStoredUser = () => {
@@ -259,14 +265,15 @@ useEffect(() => {
         setWSConnection(true)
       })
 
-
       socketRef.current.addEventListener("message", async (ev) => {
-        console.log("Received this: ", ev.data)
         // protect against using state after unmount
         // if (unmountedRef.current) return
 
         let parsedMsg: any
         try { parsedMsg = JSON.parse(ev.data) } catch (err) { console.error(err); return }
+        
+        // FIX: Commented out alert to prevent UI blocking
+        // alert("Received: " + JSON.stringify(ev.data))
 
         // When server sends history, replace messages with server history
         if (parsedMsg.type === "history" && Array.isArray(parsedMsg.messages)) {
@@ -277,6 +284,21 @@ useEffect(() => {
           }))
           setMessages(() => historyArr)
           return
+        }
+
+        if (parsedMsg?.type === "RESOLVE_CHAT") {
+          if (!resolveChatPayloadRef.current?.threadId) {
+             // throw new Error("Invalid thread Id"); // Safe fail
+             console.error("Invalid thread ID in resolve payload");
+             // Note: You might want to assign payload here even if current check fails if it's the first time
+             resolveChatPayloadRef.current = parsedMsg;
+          } else {
+             resolveChatPayloadRef.current = parsedMsg;
+          }
+          
+          // FIX: Set trigger directly and remove blocking alert
+          setAlertTrigger(true);
+          // alert("Resolve chat") 
         }
 
         if (parsedMsg.type === "message") {
@@ -490,6 +512,7 @@ useEffect(() => {
   // ---------- Render ----------
   const renderContent = () => {
     return (
+      <>
       <ScrollArea className="grow" style={{ height: "50%", overflowY: "auto" }}>
         <ChatList className="space-y-5 p-4">
           {messages.map((msg, idx) => {
@@ -541,6 +564,59 @@ useEffect(() => {
           <div ref={scrollBottomRef} />
         </ChatList>
       </ScrollArea>
+      <AlertDialog 
+        open={alertTrigger} 
+        // FIX: Added onOpenChange to handle close events
+        onOpenChange={setAlertTrigger}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Notice</AlertDialogTitle>
+            <AlertDialogDescription>
+              The customer has requested to resolve the chat, click continue to accept.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => {
+              if (resolveChatPayloadRef.current.type === "RESOLVE_CHAT" && resolveChatPayloadRef.current.threadId.length > 10) {
+                try {
+                  const response = await fetch(`${HTTP_API_URL}/api/resolvechat`, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                      customerId: userData.userData.id,
+                      role: userData.userData.role,
+                      threadId: currentThreadIdRef.current === resolveChatPayloadRef.current.threadId ? resolveChatPayloadRef.current.threadId : resolveChatPayloadRef.current.threadId
+                    })
+                  })
+
+                  if (!response.ok) {
+                    toast.error("Sorry couldn't resolve chat")
+                  } else {
+                    toast.success("Chat resolved successfully");
+                    setAlertTrigger(false);
+                    // navigate("/dashboard", {replace: true});
+                    window.location.href = "/dashboard";
+                  }
+                } catch (error) {
+                  if (error instanceof Error) {
+                    toast.error(error.message);
+                  } else {
+                    toast.error("An unknown error occurred")
+                  }
+                }
+              }
+            }}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      </>
     )
   }
 

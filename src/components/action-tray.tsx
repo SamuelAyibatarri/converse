@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { UseAgentChatState } from "@/lib/zus";
+import { UseAgentChatState, useTriggerStore } from "@/lib/zus";
 import { useEffect, useState } from "react";
 
 type ActionType = "resolve_chat" | "reset_link" | "block_acc" | "delete_acc" | null;
@@ -20,7 +20,12 @@ const ActionTray = () => {
   const [activeAction, setActiveAction] = useState<ActionType>(null);
 
   const currentCustomerIdZus = UseAgentChatState((state) => state.currentCustomerId);
+  const triggerResolveChat = useTriggerStore((state) => state.triggerResolveChat);
 
+  const handleResolveButtonClick = () => {
+    setActiveAction("resolve_chat");
+    triggerResolveChat();
+  } 
   useEffect(() => {
     if (currentCustomerIdZus && currentCustomerIdZus !== "random" && currentCustomerIdZus.length > 10) {
       setCustomerIdSet(true);
@@ -48,7 +53,7 @@ const ActionTray = () => {
       </h3>
       
       <div className="grid grid-cols-2 gap-3">
-        <Button variant="outline" onClick={() => setActiveAction("resolve_chat")}>
+        <Button variant="outline" onClick={handleResolveButtonClick}>
           <PlusCircle className="mr-2 h-4 w-4" /> Resolve
         </Button>
         <Button variant="outline" onClick={() => setActiveAction("reset_link")}>
